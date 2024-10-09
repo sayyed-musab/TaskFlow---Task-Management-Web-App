@@ -26,7 +26,7 @@ export default function Signup() {
     return (
         <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-zinc-800 p-6 rounded-lg shadow-md">
-                <h1 className="text-4xl font-bold text-center mb-6">Create Your Account</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">Create Your Account</h1>
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
