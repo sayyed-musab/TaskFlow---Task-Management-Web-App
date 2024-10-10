@@ -9,14 +9,21 @@ const initialTasks = [
     { id: 4, title: 'Meeting with the client', status: 'Completed', dueDate: '2024-10-01' },
 ];
 
+// Function to get the count of overdue tasks
 const getOverdueTasksCount = (tasks) => {
     const today = new Date();
     return tasks.filter(task => new Date(task.dueDate) < today && task.status !== 'Completed').length;
 };
 
+// Function to get the count of uncompleted tasks
+const getUncompletedTasksCount = (tasks) => {
+    return tasks.filter(task => task.status !== 'Completed').length;
+};
+
 export default function Dashboard() {
     const [tasks, setTasks] = useState(initialTasks);
     const overdueTasksCount = getOverdueTasksCount(tasks);
+    const uncompletedTasksCount = getUncompletedTasksCount(tasks); // Calculate uncompleted tasks
 
     const toggleTaskStatus = (id) => {
         setTasks(tasks.map(task =>
@@ -46,10 +53,10 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-semibold mb-4">Task Overview</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <p className="text-lg">Total Tasks: <span className="font-bold">{tasks.length}</span></p>
+                        <p className="text-lg">Overdue Tasks: <span className="font-bold text-red-500">{overdueTasksCount}</span></p>
                     </div>
                     <div>
-                        <p className="text-lg">Overdue Tasks: <span className="font-bold text-red-500">{overdueTasksCount}</span></p>
+                        <p className="text-lg">Uncompleted Tasks: <span className="font-bold">{uncompletedTasksCount}</span></p> {/* Uncompleted tasks count */}
                     </div>
                 </div>
                 <div className="mt-4">
