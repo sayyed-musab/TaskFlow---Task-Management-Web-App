@@ -1,4 +1,3 @@
-// app/dashboard/layout.js
 import Sidebar from "@/components/Sidebar";
 
 export const metadata = {
