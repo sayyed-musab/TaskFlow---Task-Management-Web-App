@@ -12,7 +12,7 @@ export default function Sidebar() {
     return (
         <>
             {/* Menu Button for Mobile */}
-            <div className="lg:hidden p-4 bg-zinc-800">
+            <div className="lg:hidden p-2 bg-zinc-800">
                 <button 
                     onClick={toggleSidebar} 
                     className="text-white focus:outline-none"
