@@ -37,8 +37,8 @@ export default function Sidebar() {
                     <Link href="/dashboard/tasks/create" className="block text-white hover:bg-emerald-500 hover:text-white p-2 rounded transition duration-300">
                         Create New Task
                     </Link>
-                    <Link href="/dashboard/profile" className="block text-white hover:bg-emerald-500 hover:text-white p-2 rounded transition duration-300">
-                        Profile
+                    <Link href="/dashboard/settings" className="block text-white hover:bg-emerald-500 hover:text-white p-2 rounded transition duration-300">
+                        Settings
                     </Link>
                     <Link href="/" className="block text-red-500 hover:bg-red-600 hover:text-white p-2 rounded transition duration-300">
                         Logout
