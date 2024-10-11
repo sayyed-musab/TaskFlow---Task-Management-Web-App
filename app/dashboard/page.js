@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import Image from "next/image";
+import DeleteConfirmationModal from '@/components/DeleteTaskConfirmationModal';
 
 const initialTasks = [
     { id: 1, title: 'Complete project report', status: 'In Progress', dueDate: '2024-10-15' },
@@ -22,8 +24,11 @@ const getUncompletedTasksCount = (tasks) => {
 
 export default function Dashboard() {
     const [tasks, setTasks] = useState(initialTasks);
+    const [deleteTaskId, setDeleteTaskId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const overdueTasksCount = getOverdueTasksCount(tasks);
-    const uncompletedTasksCount = getUncompletedTasksCount(tasks); // Calculate uncompleted tasks
+    const uncompletedTasksCount = getUncompletedTasksCount(tasks);
 
     const toggleTaskStatus = (id) => {
         setTasks(tasks.map(task =>
@@ -37,7 +42,12 @@ export default function Dashboard() {
         ));
     };
 
-    // Sort tasks: move completed tasks to the bottom
+    const handleDeleteTask = () => {
+        setTasks(tasks.filter(task => task.id !== deleteTaskId));
+        setDeleteTaskId(null);
+        setShowDeleteModal(false);
+    };
+
     const sortedTasks = tasks.slice().sort((a, b) => {
         if (a.status === 'Completed' && b.status !== 'Completed') return 1;
         if (a.status !== 'Completed' && b.status === 'Completed') return -1;
@@ -45,7 +55,7 @@ export default function Dashboard() {
     });
 
     return (
-        <div className="lg:ml-64 bg-zinc-950 min-h-screen overflow-scroll w-full text-white p-4 lg:p-8">
+        <div className="lg:ml-52 bg-zinc-950 min-h-screen overflow-scroll w-full text-white p-4 lg:p-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">Dashboard</h1>
 
             {/* Task Overview */}
@@ -56,7 +66,7 @@ export default function Dashboard() {
                         <p className="text-lg">Overdue Tasks: <span className="font-bold text-red-500">{overdueTasksCount}</span></p>
                     </div>
                     <div>
-                        <p className="text-lg">Uncompleted Tasks: <span className="font-bold">{uncompletedTasksCount}</span></p> {/* Uncompleted tasks count */}
+                        <p className="text-lg">Uncompleted Tasks: <span className="font-bold">{uncompletedTasksCount}</span></p>
                     </div>
                 </div>
                 <div className="mt-4">
@@ -82,18 +92,44 @@ export default function Dashboard() {
                                 <h3 className="text-lg font-bold">{task.title}</h3>
                                 <p className="text-gray-400">Due: {task.dueDate}</p>
                             </div>
-                            {task.status !== 'Completed' && (
-                                <div
-                                    className={`mt-4 md:mt-0 px-2 py-1 text-sm font-semibold rounded-full select-none cursor-pointer ${task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'}`}
-                                    onClick={() => toggleTaskStatus(task.id)}
+                            <div className="flex gap-4">
+                                {task.status !== 'Completed' && (
+                                    <div
+                                        className={`mt-4 md:mt-0 px-2 py-1 text-sm font-semibold rounded-full select-none cursor-pointer ${task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'}`}
+                                        onClick={() => toggleTaskStatus(task.id)}
+                                    >
+                                        {task.status}
+                                    </div>
+                                )}
+                                {/* Delete Button */}
+                                <button
+                                    onClick={() => {
+                                        setDeleteTaskId(task.id);
+                                        setShowDeleteModal(true);
+                                    }}
+                                    className="mt-4 md:mt-0 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded transition duration-300"
                                 >
-                                    {task.status}
-                                </div>
-                            )}
+                                    <Image
+                                        src="/icons/delete.svg"
+                                        alt="Delete"
+                                        width={20}
+                                        height={20}
+                                        className="rounded-lg shadow-lg"
+                                    />
+                                </button>
+                            </div>
                         </li>
                     ))}
                 </ul>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <DeleteConfirmationModal
+                    closeDeleteModal={() => setShowDeleteModal(false)}
+                    handleDeleteTask={handleDeleteTask}
+                />
+            )}
         </div>
     );
 }

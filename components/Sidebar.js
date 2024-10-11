@@ -25,7 +25,7 @@ export default function Sidebar() {
             </div>
 
             {/* Sidebar */}
-            <aside className={`fixed top-0 left-0 bg-zinc-800 h-screen p-6 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:w-64 w-64`}>
+            <aside className={`fixed top-0 left-0 bg-zinc-800 h-screen p-6 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} w-48 md:w-52`}>
                 <h2 className="text-2xl font-bold text-white mb-6">TaskFlow</h2>
                 <nav className="space-y-4">
                     <Link href="/dashboard" className="block text-white hover:bg-emerald-500 hover:text-white p-2 rounded transition duration-300">

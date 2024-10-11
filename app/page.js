@@ -8,10 +8,10 @@ export default function Home() {
         <div className="md:w-1/2">
           <h1 className="text-5xl font-bold mb-6">Welcome to TaskFlow</h1>
           <p className="text-lg mb-4">
-            Unlock your productivity with TaskFlow—the all-in-one task management solution tailored for professionals like you.
+            Unlock your productivity with TaskFlow—the all-in-one task management solution tailored for you.
           </p>
           <p className="text-lg mb-6">
-            Join us today to simplify your task management and take your projects to new heights.
+            Join us today to simplify your personal task management and elevate your daily productivity!
           </p>
           <p className="text-xl mb-6 font-bold">It’s time to work smarter, not harder!</p>
           <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4 justify-center md:justify-start">

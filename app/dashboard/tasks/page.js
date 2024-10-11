@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
+import DeleteConfirmationModal from "@/components/DeleteTaskConfirmationModal";
 
 const initialTasks = [
     { id: 1, title: 'Complete project report', status: 'In Progress', dueDate: '2024-10-15' },
@@ -12,6 +14,8 @@ export default function ViewTasks() {
     const [tasks, setTasks] = useState(initialTasks);
     const [filter, setFilter] = useState('');
     const [sortOption, setSortOption] = useState('dueDate');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTaskId, setDeleteTaskId] = useState(null);
 
     const handleFilterChange = (event) => {
         setFilter(event.target.value);
@@ -22,19 +26,24 @@ export default function ViewTasks() {
     };
 
     const toggleCompletion = (id) => {
-        setTasks(tasks.map(task => task.id === id ? { ...task, status: task.status === 'Completed' ? 'Pending' : 'Completed' } : task));
+        setTasks(tasks.map(task =>
+            task.id === id ? { ...task, status: task.status === 'Completed' ? 'Pending' : 'Completed' } : task
+        ));
     };
 
-    const toggleStatus = (id) => {
+    const toggleTaskStatus = (id) => {
         setTasks(tasks.map(task =>
             task.id === id ? { ...task, status: task.status === 'Pending' ? 'In Progress' : 'Pending' } : task
         ));
     };
 
-    // Filter tasks based on status
-    const filteredTasks = tasks.filter(task => filter === '' || task.status === filter);
+    const handleDeleteTask = () => {
+        setTasks(tasks.filter(task => task.id !== deleteTaskId));
+        setDeleteTaskId(null);
+        setShowDeleteModal(false);
+    };
 
-    // Sort tasks based on selected option (status or dueDate)
+    const filteredTasks = tasks.filter(task => filter === '' || task.status === filter);
     const sortedTasks = filteredTasks.sort((a, b) => {
         if (sortOption === 'status') {
             return a.status.localeCompare(b.status);
@@ -44,7 +53,7 @@ export default function ViewTasks() {
     });
 
     return (
-        <div className="lg:ml-64 bg-zinc-950 min-h-screen overflow-scroll w-full text-white p-4 lg:p-8">
+        <div className="lg:ml-52 bg-zinc-950 min-h-screen overflow-scroll w-full text-white p-4 lg:p-8">
             <h1 className="text-4xl font-bold mb-6 text-center">View Tasks</h1>
 
             {/* Filter & Sort Options */}
@@ -102,25 +111,47 @@ export default function ViewTasks() {
                                 </td>
                                 <td className="px-4 py-2">{task.title}</td>
                                 <td className="px-4 py-2">{task.dueDate}</td>
-                                <td className="px-4 py-2">
+                                <td className="px-4 py-2 flex gap-2 items-center justify-between">
                                     {task.status === 'Completed' ? (
                                         <span className="text-gray-400">Completed</span>
                                     ) : (
                                         <button
-                                            onClick={() => toggleStatus(task.id)}
-                                            className={`px-2 py-1 text-sm font-semibold rounded-full cursor-pointer ${
-                                                task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'
-                                            }`}
+                                            onClick={() => toggleTaskStatus(task.id)}
+                                            className={`px-2 py-1 text-sm font-semibold rounded-full cursor-pointer ${task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'}`}
                                         >
                                             {task.status}
                                         </button>
                                     )}
+
+                                    <button
+                                        onClick={() => {
+                                            setDeleteTaskId(task.id);
+                                            setShowDeleteModal(true);
+                                        }}
+                                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md min-w-[40px] flex items-center justify-center"
+                                    >
+                                        <Image
+                                            src="/icons/delete.svg"
+                                            alt="Delete"
+                                            width={20}
+                                            height={20}
+                                            className="rounded-lg shadow-lg"
+                                        />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <DeleteConfirmationModal
+                    closeDeleteModal={() => setShowDeleteModal(false)}
+                    handleDeleteTask={handleDeleteTask}
+                />
+            )}
         </div>
     );
 }

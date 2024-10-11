@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AccountSettings from "./AccountSettings";
-import ChangePasswordModal from "./ChangePasswordModal";
-import DeleteAccountModal from "./DeleteAccountModal";
+import ChangePasswordModal from "@/components/ChangePasswordModal";
+import DeleteAccountModal from "@/components/DeleteAccountModal";
 
 export default function Settings() {
     const router = useRouter();
@@ -44,7 +44,7 @@ export default function Settings() {
     };
 
     return (
-        <div className="lg:ml-64 w-full bg-zinc-950 min-h-screen p-4 lg:p-8 text-white">
+        <div className="lg:ml-52 w-full bg-zinc-950 min-h-screen p-4 lg:p-8 text-white">
             <AccountSettings
                 name={name}
                 theme={theme}
