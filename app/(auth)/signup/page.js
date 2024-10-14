@@ -3,13 +3,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
 import Image from 'next/image';
-import {useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Signup() {
     const {
         register,
         handleSubmit,
-        formState: { errors ,isSubmitting },
+        formState: { errors, isSubmitting },
         watch,
     } = useForm();
 
@@ -19,6 +19,7 @@ export default function Signup() {
 
     const router = useRouter();
     const onSubmit = async (data) => {
+        setSignupErrMsg("   ")
         try {
             const res = await fetch('/api/signup', {
                 method: "POST",
@@ -56,6 +57,9 @@ export default function Signup() {
             <div className="max-w-md w-full bg-zinc-800 p-6 rounded-lg shadow-md">
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">Create Your Account</h1>
                 {signupErrMsg && <p className="text-red-400 text-center">{signupErrMsg}</p>}
+                <div className="flex items-center justify-center">
+                    <div class={isSubmitting ? "spinner" : ""}></div>
+                </div>
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
