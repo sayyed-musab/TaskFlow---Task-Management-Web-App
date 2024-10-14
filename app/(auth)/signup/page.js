@@ -3,22 +3,50 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
 import Image from 'next/image';
+import {useRouter} from 'next/navigation';
 
 export default function Signup() {
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: { errors ,isSubmitting },
         watch,
     } = useForm();
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [signupErrMsg, setSignupErrMsg] = useState("");
 
-    const onSubmit = (data) => {
-        console.log(data);
-        // signup logic here
+    const router = useRouter();
+    const onSubmit = async (data) => {
+        try {
+            const res = await fetch('/api/signup', {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                body: JSON.stringify({
+                    name: data.name,
+                    email: data.email,
+                    password: data.password
+                })
+            });
+
+            if (!res.ok) {
+                // Capture the error message from the response
+                const responseData = await res.json();
+                setSignupErrMsg(responseData.message || "Something went wrong");
+            } else {
+                // On successful signup, redirect to the dashboard
+                router.push('/dashboard');
+            }
+        } catch (error) {
+            // In case of any unexpected error, set a generic error message
+            setSignupErrMsg("Something went wrong. Please try again.");
+        }
     };
+
+
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
     const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
@@ -27,6 +55,7 @@ export default function Signup() {
         <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-zinc-800 p-6 rounded-lg shadow-md">
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">Create Your Account</h1>
+                {signupErrMsg && <p className="text-red-400 text-center">{signupErrMsg}</p>}
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
@@ -118,6 +147,7 @@ export default function Signup() {
                         <button
                             type="submit"
                             className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition duration-300"
+                            disabled={isSubmitting}
                         >
                             Sign Up
                         </button>

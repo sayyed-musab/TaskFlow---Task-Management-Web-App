@@ -53,7 +53,7 @@ export default function ViewTasks() {
     });
 
     return (
-        <div className="lg:ml-52 bg-zinc-950 min-h-screen overflow-scroll w-full text-white p-4 lg:p-8">
+        <div className="lg:ml-52 bg-zinc-950 min-h-screen overflow-y-scroll w-full text-white p-4 lg:p-8">
             <h1 className="text-4xl font-bold mb-6 text-center">View Tasks</h1>
 
             {/* Filter & Sort Options */}
