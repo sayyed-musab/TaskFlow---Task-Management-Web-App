@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "author": "Musab Sayyed",
   "repository": "https://github.com/sayyed-musab/TaskFlow---Task-Management-Web-App",
-  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
