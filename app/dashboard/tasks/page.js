@@ -33,6 +33,7 @@ export default function ViewTasks() {
     const [deleteTaskId, setDeleteTaskId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
+    const [disabledBtnId, setDisabledBtnId] = useState(); 
 
     async function fetchTasks() {
         try {
@@ -65,6 +66,7 @@ export default function ViewTasks() {
     };
 
     const handleCheckboxChange = async (id) => {
+        setDisabledBtnId(id)
         const taskToUpdate = tasks.find(task => task._id === id);
 
         if (!taskToUpdate) {
@@ -79,10 +81,13 @@ export default function ViewTasks() {
             setTasks(tasks.map(task => (task._id === updatedTask._id ? updatedTask : task)));
         } catch (error) {
             alert(error.message);
+        }finally{
+        setDisabledBtnId("")
         }
     };
 
     const toggleTaskStatus = async (id) => {
+        setDisabledBtnId(id)
         const taskToUpdate = tasks.find(task => task._id === id);
 
         if (!taskToUpdate) {
@@ -97,6 +102,9 @@ export default function ViewTasks() {
             setTasks(tasks.map(task => (task._id === updatedTask._id ? updatedTask : task)));
         } catch (error) {
             alert(error.message);
+        }
+        finally{
+            setDisabledBtnId("")
         }
     };
 
@@ -194,6 +202,7 @@ export default function ViewTasks() {
                                         checked={task.status === 'Completed'}
                                         onChange={() => handleCheckboxChange(task._id)}
                                         className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                                        disabled={disabledBtnId == task._id}
                                     />
                                 </td>
                                 <td className="px-4 py-2">{task.title}</td>
@@ -205,6 +214,7 @@ export default function ViewTasks() {
                                         <button
                                             onClick={() => toggleTaskStatus(task._id)}
                                             className={`px-2 py-1 text-sm font-semibold rounded-full cursor-pointer ${task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'}`}
+                                            disabled={disabledBtnId == task._id}
                                         >
                                             {task.status}
                                         </button>
