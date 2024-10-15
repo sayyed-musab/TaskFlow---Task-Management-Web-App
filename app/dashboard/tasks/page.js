@@ -1,21 +1,55 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import DeleteConfirmationModal from "@/components/DeleteTaskConfirmationModal";
 
-const initialTasks = [
-    { id: 1, title: 'Complete project report', status: 'In Progress', dueDate: '2024-10-15' },
-    { id: 2, title: 'Prepare presentation slides', status: 'Pending', dueDate: '2024-10-20' },
-    { id: 3, title: 'Meeting with the client', status: 'Completed', dueDate: '2024-10-01' },
-    { id: 4, title: 'Review team performance', status: 'In Progress', dueDate: '2024-10-18' },
-];
+const changeStatus = async (id, newStatus) => {
+    try {
+        const response = await fetch('/api/tasks/changeStatus', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id, status: newStatus }),
+        });
 
+        if (!response.ok) {
+            alert('Failed to update task status');
+            return;
+        }
+        const updatedTask = await response.json();
+        return updatedTask;
+    } catch (error) {
+        alert('Error updating task status: ' + error.message);
+        return;
+    }
+};
 export default function ViewTasks() {
-    const [tasks, setTasks] = useState(initialTasks);
+    const [tasks, setTasks] = useState([]);
     const [filter, setFilter] = useState('');
     const [sortOption, setSortOption] = useState('dueDate');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteTaskId, setDeleteTaskId] = useState(null);
+
+    async function fetchTasks() {
+        try {
+            const response = await fetch("/api/tasks/getAllTasks", { method: "GET" });
+            const data = await response.json();
+            if (response.ok) {
+                setTasks(data);
+            } else {
+                console.error("Error fetching tasks:", data.message);
+            }
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+        }
+    }
+
+    // Fetch tasks from the API when the component mounts
+    useEffect(() => {
+        fetchTasks();
+    }, []);
 
     const handleFilterChange = (event) => {
         setFilter(event.target.value);
@@ -25,20 +59,44 @@ export default function ViewTasks() {
         setSortOption(event.target.value);
     };
 
-    const toggleCompletion = (id) => {
-        setTasks(tasks.map(task =>
-            task.id === id ? { ...task, status: task.status === 'Completed' ? 'Pending' : 'Completed' } : task
-        ));
+    const handleCheckboxChange = async (id) => {
+        const taskToUpdate = tasks.find(task => task._id === id);
+
+        if (!taskToUpdate) {
+            alert('Task not found');
+            return;
+        }
+
+        const newStatus = taskToUpdate.status === 'Completed' ? 'Pending' : 'Completed';
+
+        try {
+            const updatedTask = await changeStatus(taskToUpdate._id.toString(), newStatus);
+            setTasks(tasks.map(task => (task._id === updatedTask._id ? updatedTask : task)));
+        } catch (error) {
+            alert(error.message);
+        }
     };
 
-    const toggleTaskStatus = (id) => {
-        setTasks(tasks.map(task =>
-            task.id === id ? { ...task, status: task.status === 'Pending' ? 'In Progress' : 'Pending' } : task
-        ));
+    const toggleTaskStatus = async (id) => {
+        const taskToUpdate = tasks.find(task => task._id === id);
+
+        if (!taskToUpdate) {
+            alert('Task not found');
+            return;
+        }
+
+        const newStatus = taskToUpdate.status === 'Pending' ? 'In Progress' : 'Pending';
+
+        try {
+            const updatedTask = await changeStatus(taskToUpdate._id.toString(), newStatus);
+            setTasks(tasks.map(task => (task._id === updatedTask._id ? updatedTask : task)));
+        } catch (error) {
+            alert(error.message);
+        }
     };
 
     const handleDeleteTask = () => {
-        setTasks(tasks.filter(task => task.id !== deleteTaskId));
+        setTasks(tasks.filter(task => task._id !== deleteTaskId));
         setDeleteTaskId(null);
         setShowDeleteModal(false);
     };
@@ -100,12 +158,12 @@ export default function ViewTasks() {
                     </thead>
                     <tbody>
                         {sortedTasks.map(task => (
-                            <tr key={task.id} className={`border-b border-zinc-600 ${new Date(task.dueDate) < new Date() && task.status !== 'Completed' ? 'bg-red-600' : 'bg-zinc-700'}`}>
+                            <tr key={task._id} className={`border-b border-zinc-600 ${new Date(task.dueDate) < new Date() && task.status !== 'Completed' ? 'bg-red-600' : 'bg-zinc-700'}`}>
                                 <td className="px-4 py-2">
                                     <input
                                         type="checkbox"
                                         checked={task.status === 'Completed'}
-                                        onChange={() => toggleCompletion(task.id)}
+                                        onChange={() => handleCheckboxChange(task._id)}
                                         className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
                                     />
                                 </td>
@@ -116,7 +174,7 @@ export default function ViewTasks() {
                                         <span className="text-gray-400">Completed</span>
                                     ) : (
                                         <button
-                                            onClick={() => toggleTaskStatus(task.id)}
+                                            onClick={() => toggleTaskStatus(task._id)}
                                             className={`px-2 py-1 text-sm font-semibold rounded-full cursor-pointer ${task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'}`}
                                         >
                                             {task.status}
@@ -125,7 +183,7 @@ export default function ViewTasks() {
 
                                     <button
                                         onClick={() => {
-                                            setDeleteTaskId(task.id);
+                                            setDeleteTaskId(task._id);
                                             setShowDeleteModal(true);
                                         }}
                                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md min-w-[40px] flex items-center justify-center"
