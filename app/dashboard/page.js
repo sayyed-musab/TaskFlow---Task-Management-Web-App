@@ -98,6 +98,7 @@ export default function Dashboard() {
         try {
             const updatedTask = await changeStatus(taskToUpdate._id.toString(), newStatus);
             setTasks(tasks.map(task => (task._id === updatedTask._id ? updatedTask : task)));
+            fetchTasks();
         } catch (error) {
             alert(error.message);
         }
