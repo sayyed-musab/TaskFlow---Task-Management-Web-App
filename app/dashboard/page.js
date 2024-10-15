@@ -1,16 +1,29 @@
 "use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import DeleteConfirmationModal from '@/components/DeleteTaskConfirmationModal';
 
+// Function to get the count of overdue tasks
+const getOverdueTasksCount = (tasks) => {
+    const today = new Date();
+    return tasks.filter(task => new Date(task.dueDate) < today && task.status !== 'Completed').length;
+};
+
+// Function to get the count of incomplete tasks
+const getIncompleteTasksCount = (tasks) => {
+    return tasks.filter(task => task.status !== 'Completed').length;
+};
+
 export default function Dashboard() {
-    const [tasks, setTasks] = useState([]); // Initialize with an empty array
+    const [tasks, setTasks] = useState([]);
     const [deleteTaskId, setDeleteTaskId] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [loading, setLoading] = useState(true); // Loading state
-    const [error, setError] = useState(null); // Error state
+
+    const overdueTasksCount = getOverdueTasksCount(tasks);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState();
+    const incompleteTasksCount = getIncompleteTasksCount(tasks);
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -31,34 +44,27 @@ export default function Dashboard() {
         fetchTasks();
     }, []);
 
-    // Function to get the count of overdue tasks
-    const getOverdueTasksCount = (tasks) => {
-        const today = new Date();
-        return tasks.filter(task => new Date(task.dueDate) < today && task.status !== 'Completed').length;
-    };
-
-    // Function to get the count of incomplete tasks
-    const getIncompleteTasksCount = (tasks) => {
-        return tasks.filter(task => task.status !== 'Completed').length;
-    };
-
-    const overdueTasksCount = getOverdueTasksCount(tasks);
-    const incompleteTasksCount = getIncompleteTasksCount(tasks);
-
     const toggleTaskStatus = (id) => {
         setTasks(tasks.map(task =>
-            task.id === id ? { ...task, status: task.status === 'Pending' ? 'In Progress' : 'Pending' } : task
+            task._id === id ? { ...task, status: task.status === 'Pending' ? 'In Progress' : 'Pending' } : task
         ));
     };
 
     const handleCheckboxChange = (id) => {
+        // Find the task that is being checked or unchecked
+        const taskToUpdate = tasks.find(task => task._id === id);
+        if (taskToUpdate) {
+            console.log(taskToUpdate); // Log the task to the console
+        }
+
+        // Update the status of the task
         setTasks(tasks.map(task =>
-            task.id === id ? { ...task, status: task.status === 'Completed' ? 'Pending' : 'Completed' } : task
+            task._id === id ? { ...task, status: task.status === 'Completed' ? 'Pending' : 'Completed' } : task
         ));
     };
 
     const handleDeleteTask = () => {
-        setTasks(tasks.filter(task => task.id !== deleteTaskId));
+        setTasks(tasks.filter(task => task._id !== deleteTaskId));
         setDeleteTaskId(null);
         setShowDeleteModal(false);
     };
@@ -109,7 +115,7 @@ export default function Dashboard() {
                                 <input
                                     type="checkbox"
                                     checked={task.status === 'Completed'}
-                                    onChange={() => handleCheckboxChange(task.id)}
+                                    onChange={() => handleCheckboxChange(task._id)}
                                     className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
                                 />
                                 <h3 className="text-lg font-bold">{task.title}</h3>
@@ -119,7 +125,7 @@ export default function Dashboard() {
                                 {task.status !== 'Completed' && (
                                     <div
                                         className={`mt-4 md:mt-0 px-2 py-1 text-sm font-semibold rounded-full select-none cursor-pointer ${task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'}`}
-                                        onClick={() => toggleTaskStatus(task.id)}
+                                        onClick={() => toggleTaskStatus(task._id)}
                                     >
                                         {task.status}
                                     </div>
