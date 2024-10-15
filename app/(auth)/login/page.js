@@ -47,7 +47,7 @@ export default function Login() {
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">Login to TaskFlow</h1>
                 {loginErrMsg && <p className="text-red-400 text-center">{loginErrMsg}</p>}
                 <div className="flex items-center justify-center">
-                    <div class={isSubmitting ? "spinner" : ""}></div>
+                    <div className={isSubmitting ? "spinner" : ""}></div>
                 </div>
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                     <div>

@@ -58,7 +58,7 @@ export default function Signup() {
                 <h1 className="text-3xl md:text-4xl font-bold text-center mb-6">Create Your Account</h1>
                 {signupErrMsg && <p className="text-red-400 text-center">{signupErrMsg}</p>}
                 <div className="flex items-center justify-center">
-                    <div class={isSubmitting ? "spinner" : ""}></div>
+                    <div className={isSubmitting ? "spinner" : ""}></div>
                 </div>
                 <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                     <div>

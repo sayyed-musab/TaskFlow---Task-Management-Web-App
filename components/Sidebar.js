@@ -1,20 +1,36 @@
 "use client"
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
     };
 
+    const handleLogout = async () => {
+        try {
+            const response = await fetch('/api/logout', { method: 'POST' });
+            if (response.ok) {
+                router.push('/')
+            } else {
+                alert('Failed to logout')
+            }
+        } catch {
+            alert('Failed to logout')
+        }
+    };
+
     return (
         <>
             {/* Menu Button for Mobile */}
+
             <div className="lg:hidden p-2 bg-zinc-800">
-                <button 
-                    onClick={toggleSidebar} 
+                <button
+                    onClick={toggleSidebar}
                     className="text-white focus:outline-none"
                 >
                     {/* Icon for Menu */}
@@ -40,16 +56,16 @@ export default function Sidebar() {
                     <Link href="/dashboard/settings" className="block text-white hover:bg-emerald-500 hover:text-white p-2 rounded transition duration-300">
                         Settings
                     </Link>
-                    <Link href="/" className="block text-red-500 hover:bg-red-600 hover:text-white p-2 rounded transition duration-300">
+                    <button onClick={handleLogout} className="block text-red-500 hover:bg-red-600 hover:text-white p-2 rounded transition duration-300">
                         Logout
-                    </Link>
+                    </button>
                 </nav>
             </aside>
 
             {/* Overlay for mobile to close sidebar */}
             {isOpen && (
-                <div 
-                    className="fixed inset-0 bg-black opacity-50 lg:hidden" 
+                <div
+                    className="fixed inset-0 bg-black opacity-50 lg:hidden"
                     onClick={toggleSidebar}>
                 </div>
             )}
