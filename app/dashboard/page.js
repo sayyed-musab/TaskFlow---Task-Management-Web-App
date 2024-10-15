@@ -45,6 +45,7 @@ export default function Dashboard() {
     const overdueTasksCount = getOverdueTasksCount(tasks);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState();
+    const [disabledBtnId, setDisabledBtnId] = useState(); 
     const incompleteTasksCount = getIncompleteTasksCount(tasks);
 
     const fetchTasks = async () => {
@@ -68,6 +69,7 @@ export default function Dashboard() {
     }, []);
 
     const toggleTaskStatus = async (id) => {
+        setDisabledBtnId(id)
         const taskToUpdate = tasks.find(task => task._id === id);
 
         if (!taskToUpdate) {
@@ -83,9 +85,13 @@ export default function Dashboard() {
         } catch (error) {
             alert(error.message);
         }
+        finally{
+            setDisabledBtnId("")
+        }
     };
 
     const handleCheckboxChange = async (id) => {
+        setDisabledBtnId(id)
         const taskToUpdate = tasks.find(task => task._id === id);
 
         if (!taskToUpdate) {
@@ -101,6 +107,9 @@ export default function Dashboard() {
             fetchTasks();
         } catch (error) {
             alert(error.message);
+        }
+        finally{
+            setDisabledBtnId("")
         }
     };
 
@@ -174,18 +183,20 @@ export default function Dashboard() {
                                         checked={task.status === 'Completed'}
                                         onChange={() => handleCheckboxChange(task._id)}
                                         className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                                        disabled={disabledBtnId == task._id}
                                     />
                                     <h3 className="text-lg font-bold">{task.title}</h3>
                                     <p className="text-gray-400">Due: {task.dueDate}</p>
                                 </div>
                                 <div className="flex gap-4">
                                     {task.status !== 'Completed' && (
-                                        <div
+                                        <button
                                             className={`mt-4 md:mt-0 px-2 py-1 text-sm font-semibold rounded-full select-none cursor-pointer ${task.status === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-500'}`}
                                             onClick={() => toggleTaskStatus(task._id)}
+                                            disabled={disabledBtnId == task._id}
                                         >
                                             {task.status}
-                                        </div>
+                                        </button>
                                     )}
                                     {/* Delete Button */}
                                     <button
