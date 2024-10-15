@@ -32,11 +32,15 @@ export async function POST(req) {
         await collection.insertOne({ name, email, password: hashedPassword });
 
         // Create a JWT token
-        const token = jwt.sign({ email }, process.env.JWT_SECRET);
+        const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
 
         // Set the token as a cookie
         const headers = new Headers();
-        headers.append('Set-Cookie', `token=${token}`);
+        headers.append('Set-Cookie',
+            `token=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}` // 7 days in seconds
+        );
+
 
         return new Response(
             JSON.stringify({ message: "User created successfully!" }),
