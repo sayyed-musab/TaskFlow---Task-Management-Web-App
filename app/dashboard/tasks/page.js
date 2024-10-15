@@ -31,6 +31,8 @@ export default function ViewTasks() {
     const [sortOption, setSortOption] = useState('dueDate');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteTaskId, setDeleteTaskId] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState();
 
     async function fetchTasks() {
         try {
@@ -39,10 +41,13 @@ export default function ViewTasks() {
             if (response.ok) {
                 setTasks(data);
             } else {
-                console.error("Error fetching tasks:", data.message);
+                setError("Error fetching tasks:", data.message);
             }
         } catch (error) {
-            console.error("Error fetching tasks:", error);
+            setError("Error fetching tasks:", error);
+        }
+        finally {
+            setLoading(false);
         }
     }
 
@@ -95,11 +100,27 @@ export default function ViewTasks() {
         }
     };
 
-    const handleDeleteTask = () => {
-        setTasks(tasks.filter(task => task._id !== deleteTaskId));
-        setDeleteTaskId(null);
-        setShowDeleteModal(false);
+    const handleDeleteTask = async () => {
+        if (!deleteTaskId) return;
+
+        const response = await fetch('/api/tasks/delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: deleteTaskId }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            console.log("Task deleted:", data.message);
+            fetchTasks();
+            setShowDeleteModal(false);
+        } else {
+            console.error("Error deleting task:", data.message);
+        }
     };
+
 
     const filteredTasks = tasks.filter(task => filter === '' || task.status === filter);
     const sortedTasks = filteredTasks.sort((a, b) => {
@@ -109,6 +130,14 @@ export default function ViewTasks() {
             return new Date(a.dueDate) - new Date(b.dueDate);
         }
     });
+
+    if (loading) {
+        return <div className="lg:ml-52 h-full w-full flex items-center justify-center"><div className="spinner"></div></div>;
+    }
+
+    if (error) {
+        return <div className="lg:ml-52 h-full w-full flex items-center justify-center">Error: {error}</div>;
+    }
 
     return (
         <div className="lg:ml-52 bg-zinc-950 min-h-screen overflow-y-scroll w-full text-white p-4 lg:p-8">
