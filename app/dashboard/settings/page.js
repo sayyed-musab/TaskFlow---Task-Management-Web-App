@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AccountSettings from "./AccountSettings";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
@@ -8,10 +8,32 @@ import DeleteAccountModal from "@/components/DeleteAccountModal";
 
 export default function Settings() {
     const router = useRouter();
-    const [name] = useState("Your Name");
-    const [theme, setTheme] = useState("System Default");
+    const [name, setName] = useState('');
+    const [error, setError] = useState(null);
 
-    // Pop-up for Change Passowrd & Account Deletion
+    useEffect(() => {
+        const fetchUsername = async () => {
+            try {
+                const response = await fetch('/api/settings/getUsername');
+                const data = await response.json();
+                if (response.ok) {
+                    setName(data.name);
+                    setError(null); // Clear error on successful fetch
+                } else {
+                    setName('......');
+                    setError(data.message || 'Failed to fetch username.'); // Show a relevant error message
+                }
+            } catch (error) {
+                setName('......');
+                setError("Error fetching username."); // Handle general fetch error
+                console.error("Error fetching username:", error);
+            }
+        };
+
+        fetchUsername();
+    }, []);
+
+    // Pop-up for Change Password & Account Deletion
     const [isChangePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
     const [isDeleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
 
@@ -19,22 +41,22 @@ export default function Settings() {
     const [deletePassword, setDeletePassword] = useState("");
     const [isDeleteConfirmationChecked, setDeleteConfirmationChecked] = useState(false);
 
-    const handleChangePassword = (data) => {
+    const handleChangePassword = async (data) => {
         const { currentPassword, newPassword, confirmPassword } = data;
-        if (currentPassword === "your_password") {
-            if (newPassword === confirmPassword) {
-                alert("Password changed successfully!");
-                setChangePasswordModalOpen(false);
-            } else {
-                alert("New passwords do not match!");
-            }
+        
+        // Replace with API call to verify current password and change it
+        if (currentPassword && newPassword === confirmPassword) {
+            // Call to API for password change goes here
+            alert("Password changed successfully!");
+            setChangePasswordModalOpen(false);
         } else {
-            alert("Current password is incorrect!");
+            alert("New passwords do not match or current password is incorrect!");
         }
     };
 
-    const handleAccountDeletion = () => {
-        if (deletePassword === "your_password" && isDeleteConfirmationChecked) {
+    const handleAccountDeletion = async () => {
+        // Replace with actual API call for account deletion
+        if (deletePassword && isDeleteConfirmationChecked) {
             alert("Account deleted successfully!");
             setDeleteAccountModalOpen(false);
             router.push("/");
@@ -47,8 +69,7 @@ export default function Settings() {
         <div className="lg:ml-52 w-full bg-zinc-950 min-h-screen p-4 lg:p-8 text-white">
             <AccountSettings
                 name={name}
-                theme={theme}
-                setTheme={setTheme}
+                error={error} // Pass the error message to AccountSettings for display
                 openChangePasswordModal={() => setChangePasswordModalOpen(true)}
                 openDeleteAccountModal={() => setDeleteAccountModalOpen(true)}
             />
