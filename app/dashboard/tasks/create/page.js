@@ -6,23 +6,48 @@ export default function CreateTask() {
     const [task, setTask] = useState("");
     const [dueDate, setDueDate] = useState("");
     const [status, setStatus] = useState("Pending");
+    const [createTaskErrMsg, setCreateTaskErrMsg] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Submit task logic here
-        console.log("New Task:", { task, dueDate, status });
-        router.push("/dashboard");
+        setIsSubmitting(true);
+        setCreateTaskErrMsg("");
+
+        try {
+            const response = await fetch('/api/tasks/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title: task, status, dueDate }),
+            });
+
+            if (response.ok) {
+                router.push("/dashboard");
+            } else {
+                const errorData = await response.json();
+                setCreateTaskErrMsg(errorData.message || "Failed to create task.");
+            }
+        } catch (error) {
+            setCreateTaskErrMsg("An error occurred while creating the task.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
         <div className="lg:ml-52 bg-zinc-950 min-h-screen p-6 lg:p-8 flex w-full items-center justify-center">
-            <form 
-                onSubmit={handleSubmit} 
+            <form
+                onSubmit={handleSubmit}
                 className="bg-zinc-800 rounded-lg shadow-lg p-8 max-w-md w-full space-y-6"
             >
                 <h1 className="text-3xl font-bold text-center text-white">Create New Task</h1>
-                
+                {createTaskErrMsg && <p className="text-red-400 text-center">{createTaskErrMsg}</p>}
+                <div className="flex items-center justify-center">
+                    <div className={isSubmitting ? "spinner" : ""}></div>
+                </div>
                 <div>
                     <label htmlFor="task" className="block text-lg font-semibold text-white mb-2">Task</label>
                     <input
@@ -61,9 +86,10 @@ export default function CreateTask() {
                     </select>
                 </div>
 
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded transition duration-300"
+                    disabled={isSubmitting}
                 >
                     Create Task
                 </button>
