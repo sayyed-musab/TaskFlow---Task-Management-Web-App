@@ -15,6 +15,29 @@ const getIncompleteTasksCount = (tasks) => {
     return tasks.filter(task => task.status !== 'Completed').length;
 };
 
+const changeStatus = async (id, newStatus) => {
+    try {
+        const response = await fetch('/api/tasks/changeStatus', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id, status: newStatus }),
+        });
+
+        if (!response.ok) {
+            alert('Failed to update task status');
+            return 
+        }
+        const updatedTask = await response.json();
+        return updatedTask; 
+    } catch (error) {
+        alert('Error updating task status:', error);
+        return
+    }
+};
+
+
 export default function Dashboard() {
     const [tasks, setTasks] = useState([]);
     const [deleteTaskId, setDeleteTaskId] = useState(null);
@@ -25,43 +48,63 @@ export default function Dashboard() {
     const [error, setError] = useState();
     const incompleteTasksCount = getIncompleteTasksCount(tasks);
 
-    useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                const response = await fetch('/api/tasks/getIncompleteTasks');
-                if (!response.ok) {
-                    throw new Error("Failed to fetch tasks");
-                }
-                const data = await response.json();
-                setTasks(data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
+    const fetchTasks = async () => {
+        try {
+            const response = await fetch('/api/tasks/getIncompleteTasks');
+            if (!response.ok) {
+                setError("Failed to fetch tasks");
             }
-        };
+            const data = await response.json();
+            setTasks(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchTasks();
     }, []);
 
-    const toggleTaskStatus = (id) => {
-        setTasks(tasks.map(task =>
-            task._id === id ? { ...task, status: task.status === 'Pending' ? 'In Progress' : 'Pending' } : task
-        ));
-    };
-
-    const handleCheckboxChange = (id) => {
-        // Find the task that is being checked or unchecked
+    const toggleTaskStatus = async (id) => {
         const taskToUpdate = tasks.find(task => task._id === id);
-        if (taskToUpdate) {
-            console.log(taskToUpdate); // Log the task to the console
+    
+        if (!taskToUpdate) {
+            alert('Task not found');
+            return;
         }
-
-        // Update the status of the task
-        setTasks(tasks.map(task =>
-            task._id === id ? { ...task, status: task.status === 'Completed' ? 'Pending' : 'Completed' } : task
-        ));
+    
+        const newStatus = taskToUpdate.status === 'Pending' ? 'In Progress' : 'Pending';
+    
+        try {
+            const updatedTask = await changeStatus(taskToUpdate._id.toString(), newStatus);
+            setTasks(tasks.map(task => (task._id === updatedTask._id ? updatedTask : task)));
+        } catch (error) {
+            alert(error.message); 
+        }
     };
+    
+
+    const handleCheckboxChange = async (id) => {
+        const taskToUpdate = tasks.find(task => task._id === id);
+        
+        if (!taskToUpdate) {
+            alert('Task not found');
+            return;
+        }
+    
+        const newStatus = taskToUpdate.status === 'Completed' ? 'Pending' : 'Completed';
+    
+        try {
+            const updatedTask = await changeStatus(taskToUpdate._id.toString(), newStatus);
+            setTasks(tasks.map(task => (task._id === updatedTask._id ? updatedTask : task)));
+            fetchTasks();
+        } catch (error) {
+            alert(error.message); // Handle the error gracefully
+        }
+    };
+    
 
     const handleDeleteTask = () => {
         setTasks(tasks.filter(task => task._id !== deleteTaskId));
@@ -82,7 +125,6 @@ export default function Dashboard() {
     if (error) {
         return <div className="lg:ml-52 h-full w-full flex items-center justify-center">Error: {error}</div>
     }
-
     return (
         <div className="lg:ml-52 bg-zinc-950 min-h-screen overflow-y-scroll w-full text-white p-4 lg:p-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">Dashboard</h1>
@@ -110,7 +152,7 @@ export default function Dashboard() {
             <div className="bg-zinc-800 rounded-lg shadow-lg p-4">
                 <ul className="space-y-4">
                     {sortedTasks.map(task => (
-                        <li key={task.id} className={`flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg ${new Date(task.dueDate) < new Date() && task.status !== 'Completed' ? 'bg-red-600' : 'bg-zinc-700'}`}>
+                        <li key={task._id} className={`flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg ${new Date(task.dueDate) < new Date() && task.status !== 'Completed' ? 'bg-red-600' : 'bg-zinc-700'}`}>
                             <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-x-4 md:space-y-0">
                                 <input
                                     type="checkbox"
@@ -133,7 +175,7 @@ export default function Dashboard() {
                                 {/* Delete Button */}
                                 <button
                                     onClick={() => {
-                                        setDeleteTaskId(task.id);
+                                        setDeleteTaskId(task._id);
                                         setShowDeleteModal(true);
                                     }}
                                     className="mt-4 md:mt-0 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded transition duration-300"
