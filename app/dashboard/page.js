@@ -1,34 +1,49 @@
 "use client";
+
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import DeleteConfirmationModal from '@/components/DeleteTaskConfirmationModal';
 
-const initialTasks = [
-    { id: 1, title: 'Complete project report', status: 'In Progress', dueDate: '2024-10-15' },
-    { id: 2, title: 'Prepare presentation slides', status: 'Pending', dueDate: '2024-10-20' },
-    { id: 3, title: 'Review team performance', status: 'In Progress', dueDate: '2024-10-18' },
-    { id: 4, title: 'Meeting with the client', status: 'Completed', dueDate: '2024-10-01' },
-];
-
-// Function to get the count of overdue tasks
-const getOverdueTasksCount = (tasks) => {
-    const today = new Date();
-    return tasks.filter(task => new Date(task.dueDate) < today && task.status !== 'Completed').length;
-};
-
-// Function to get the count of uncompleted tasks
-const getUncompletedTasksCount = (tasks) => {
-    return tasks.filter(task => task.status !== 'Completed').length;
-};
-
 export default function Dashboard() {
-    const [tasks, setTasks] = useState(initialTasks);
+    const [tasks, setTasks] = useState([]); // Initialize with an empty array
     const [deleteTaskId, setDeleteTaskId] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [loading, setLoading] = useState(true); // Loading state
+    const [error, setError] = useState(null); // Error state
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const response = await fetch('/api/tasks/getIncompleteTasks');
+                if (!response.ok) {
+                    throw new Error("Failed to fetch tasks");
+                }
+                const data = await response.json();
+                setTasks(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTasks();
+    }, []);
+
+    // Function to get the count of overdue tasks
+    const getOverdueTasksCount = (tasks) => {
+        const today = new Date();
+        return tasks.filter(task => new Date(task.dueDate) < today && task.status !== 'Completed').length;
+    };
+
+    // Function to get the count of incomplete tasks
+    const getIncompleteTasksCount = (tasks) => {
+        return tasks.filter(task => task.status !== 'Completed').length;
+    };
 
     const overdueTasksCount = getOverdueTasksCount(tasks);
-    const uncompletedTasksCount = getUncompletedTasksCount(tasks);
+    const incompleteTasksCount = getIncompleteTasksCount(tasks);
 
     const toggleTaskStatus = (id) => {
         setTasks(tasks.map(task =>
@@ -54,6 +69,14 @@ export default function Dashboard() {
         return 0;
     });
 
+    if (loading) {
+        return <div className="lg:ml-52 h-full w-full flex items-center justify-center"><div className="spinner"></div></div>
+    }
+
+    if (error) {
+        return <div className="lg:ml-52 h-full w-full flex items-center justify-center">Error: {error}</div>
+    }
+
     return (
         <div className="lg:ml-52 bg-zinc-950 min-h-screen overflow-y-scroll w-full text-white p-4 lg:p-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">Dashboard</h1>
@@ -66,7 +89,7 @@ export default function Dashboard() {
                         <p className="text-lg">Overdue Tasks: <span className="font-bold text-red-500">{overdueTasksCount}</span></p>
                     </div>
                     <div>
-                        <p className="text-lg">Uncompleted Tasks: <span className="font-bold">{uncompletedTasksCount}</span></p>
+                        <p className="text-lg">Incomplete Tasks: <span className="font-bold">{incompleteTasksCount}</span></p>
                     </div>
                 </div>
                 <div className="mt-4">
