@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AccountSettings from "./AccountSettings";
-import ChangePasswordModal from "@/components/ChangePasswordModal";
 import DeleteAccountModal from "@/components/DeleteAccountModal";
 
 export default function Settings() {
@@ -21,11 +20,11 @@ export default function Settings() {
                     setError(null); // Clear error on successful fetch
                 } else {
                     setName('......');
-                    setError(data.message || 'Failed to fetch username.'); // Show a relevant error message
+                    setError(data.message || 'Failed to fetch username.');
                 }
             } catch (error) {
                 setName('......');
-                setError("Error fetching username."); // Handle general fetch error
+                setError("Error fetching username.");
                 console.error("Error fetching username:", error);
             }
         };
@@ -33,35 +32,31 @@ export default function Settings() {
         fetchUsername();
     }, []);
 
-    // Pop-up for Change Password & Account Deletion
-    const [isChangePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+    // Pop-up Account Deletion
     const [isDeleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
 
-    // For Account Deletion 
-    const [deletePassword, setDeletePassword] = useState("");
-    const [isDeleteConfirmationChecked, setDeleteConfirmationChecked] = useState(false);
+    const handleAccountDeletion = async (deletePassword) => {
+        try {
+            const response = await fetch('/api/settings/deleteAccount', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password: deletePassword }), 
+            });
 
-    const handleChangePassword = async (data) => {
-        const { currentPassword, newPassword, confirmPassword } = data;
-        
-        // Replace with API call to verify current password and change it
-        if (currentPassword && newPassword === confirmPassword) {
-            // Call to API for password change goes here
-            alert("Password changed successfully!");
-            setChangePasswordModalOpen(false);
-        } else {
-            alert("New passwords do not match or current password is incorrect!");
-        }
-    };
+            const data = await response.json();
 
-    const handleAccountDeletion = async () => {
-        // Replace with actual API call for account deletion
-        if (deletePassword && isDeleteConfirmationChecked) {
-            alert("Account deleted successfully!");
-            setDeleteAccountModalOpen(false);
-            router.push("/");
-        } else {
-            alert("Incorrect password or confirmation not checked.");
+            if (response.ok) {
+                alert(data.message); // Display success message
+                setDeleteAccountModalOpen(false);
+                router.push("/"); // Redirect after account deletion
+            } else {
+                alert(data.message); // Display error message if deletion failed
+            }
+        } catch (error) {
+            console.error("Error deleting account:", error);
+            alert("Failed to delete account. Please try again.");
         }
     };
 
@@ -69,26 +64,15 @@ export default function Settings() {
         <div className="lg:ml-52 w-full bg-zinc-950 min-h-screen p-4 lg:p-8 text-white">
             <AccountSettings
                 name={name}
-                error={error} // Pass the error message to AccountSettings for display
+                error={error}
                 openChangePasswordModal={() => setChangePasswordModalOpen(true)}
                 openDeleteAccountModal={() => setDeleteAccountModalOpen(true)}
             />
-
-            {isChangePasswordModalOpen && (
-                <ChangePasswordModal
-                    closeChangePasswordModal={() => setChangePasswordModalOpen(false)}
-                    handleChangePassword={handleChangePassword}
-                />
-            )}
 
             {isDeleteAccountModalOpen && (
                 <DeleteAccountModal
                     closeDeleteAccountModal={() => setDeleteAccountModalOpen(false)}
                     handleAccountDeletion={handleAccountDeletion}
-                    deletePassword={deletePassword}
-                    setDeletePassword={setDeletePassword}
-                    isDeleteConfirmationChecked={isDeleteConfirmationChecked}
-                    setDeleteConfirmationChecked={setDeleteConfirmationChecked}
                 />
             )}
         </div>

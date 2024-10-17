@@ -6,19 +6,17 @@ export default function DeleteAccountModal({
     closeDeleteAccountModal,
     handleAccountDeletion,
 }) {
-    const { register, handleSubmit, formState: { errors } } = useForm();
-
-    const onSubmit = (data) => {
-        handleAccountDeletion(data.deletePassword);  // Pass password to deletion handler
-    };
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-zinc-800 rounded-lg p-6 shadow-lg w-96">
                 <h2 className="text-2xl font-semibold mb-4">Delete Account</h2>
                 <p className="mb-4">Are you sure you want to delete your account? This action cannot be undone.</p>
-                
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={handleSubmit((data)=>{ handleAccountDeletion(data.deletePassword)})}>
+                <div className="flex items-center justify-center">
+                    <div className={isSubmitting ? "spinner" : ""}></div>
+                </div>
                     {/* Password Field */}
                     <div className="mb-4">
                         <label htmlFor="delete-password" className="block mb-2">Password:</label>
@@ -54,6 +52,7 @@ export default function DeleteAccountModal({
                         <button
                             type="submit"
                             className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 mr-2"
+                            disabled={isSubmitting}
                         >
                             Delete
                         </button>
